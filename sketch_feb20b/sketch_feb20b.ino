@@ -1,3 +1,7 @@
+//Reference
+//https://learn.adafruit.com/mini-thermal-receipt-printer/bitmap-printing
+//https://www.arduino.cc/en/Tutorial/Button
+
 #include "Adafruit_Thermal.h" 
 #include "noun_1352964_cc.h"
 #include "SoftwareSerial.h"
@@ -7,10 +11,24 @@
 SoftwareSerial mySerial(RX_PIN, TX_PIN); // Declare SoftwareSerial obj first
 Adafruit_Thermal printer(&mySerial);     // Pass addr to printer constructor
 
+// constants won't change. They're used here to set pin numbers:
+const int buttonPin = 2;     // the number of the pushbutton pin
+const int ledRed =  12;      // the number of the LED pin
+const int ledGreen =  13;      // the number of the LED pin
+
+// variables will change:
+int buttonState = 0;         // variable for reading the pushbutton status
+
 // -----------------------------------------------------------------------
 
 void setup() {
 
+  // initialize the LED pin as an output:
+  pinMode(ledRed, OUTPUT);
+  pinMode(ledGreen, OUTPUT);
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin, INPUT);
+  
   // This line is for compatibility with the Adafruit IotP project pack,
   // which uses pin 7 as a spare grounding point.  You only need this if
   // wired up the same way (w/3-pin header into pins 5/6/7):
@@ -20,19 +38,36 @@ void setup() {
   mySerial.begin(19200);  // Initialize SoftwareSerial
   printer.begin();        // Init printer (same regardless of serial type)
 
-  // The following calls are in setup(), but don't *need* to be.  Use them
-  // anywhere!  They're just here so they run one time and are not printed
-  // over and over (which would happen if they were in loop() instead).
-  // Some functions will feed a line when called, this is normal.
-
-  // Print the 75x75 pixel logo in adalogo.h:
-  printer.printBitmap(noun_1352964_cc_width, noun_1352964_cc_height, noun_1352964_cc_data);
-
-  printer.sleep();      // Tell printer to sleep
-  delay(3000L);         // Sleep for 3 seconds
-  printer.wake();       // MUST wake() before printing again, even if reset
-  printer.setDefault(); // Restore printer to defaults
 }
 
 void loop() {
+  // read the state of the pushbutton value:
+  buttonState = digitalRead(buttonPin);
+
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (buttonState == HIGH) {
+    // turn LED on:
+    digitalWrite(ledRed, HIGH);
+    delay(1000);
+    digitalWrite(ledRed, LOW);
+    delay(1000);
+    digitalWrite(ledRed, HIGH);
+    delay(1000);
+    digitalWrite(ledRed, LOW);
+    delay(1000);
+    digitalWrite(ledRed, HIGH);
+    delay(1000);
+    digitalWrite(ledRed, LOW);
+    digitalWrite(ledGreen, HIGH);
+    delay(1000);
+
+    printer.printBitmap(noun_1352964_cc_width, noun_1352964_cc_height, noun_1352964_cc_data);
+    printer.feed(2);
+
+    printer.sleep();      // Tell printer to sleep
+    delay(3000L);         // Sleep for 3 seconds
+    printer.wake();       // MUST wake() before printing again, even if reset
+    printer.setDefault(); // Restore printer to defaults
+    digitalWrite(ledGreen, LOW);
+  }
 }
